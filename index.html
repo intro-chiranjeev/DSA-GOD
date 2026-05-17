@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>DSA GOD</title>
+
+  <!-- FAVICON -->
+  <link rel="icon" type="image/png" href="android-chrome-512x512.png">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- MARKDOWN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <!-- HIGHLIGHT.JS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css"
+  />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <script>
+    hljs.highlightAll();
+  </script>
+
+  <!-- IMPORT MAP -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.run/@google/genai"
+    }
+  }
+  </script>
+
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+      <!-- LOGO -->
+      <div class="logo">
+
+        <img
+          src="favicon-48x48.png"
+        
+          class="logo-img"
+        />
+
+        <span>DSA GOD</span>
+
+      </div>
+
+      <div class="sidebar-section">
+
+        <div class="sidebar-title">
+          Topics
+        </div>
+
+        <div class="nav-item active" data-topic="Current Session">
+  Current Session
+</div>
+
+
+      </div>
+
+      <div class="stats">
+
+        <div class="stats-title">
+          Stats
+        </div>
+
+        <div class="stat">
+          <span>Questions</span>
+          <span id="question-count">0</span>
+        </div>
+
+      </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- HEADER -->
+      <header class="topbar">
+
+        <div>
+
+          <div class="session-title">
+            General Session
+          </div>
+
+          <div class="session-subtitle">
+            O(∞) knowledge
+          </div>
+
+        </div>
+
+        <div class="badge-wrap">
+
+          <div class="badge" id="time-badge">
+            T: O(?)
+          </div>
+
+          <div class="badge" id="space-badge">
+            S: O(?)
+          </div>
+
+        </div>
+
+      </header>
+
+      <!-- CHAT -->
+      <div class="chat-box" id="chat-box">
+
+        <div class="message ai-message">
+          Ask a DSA question.
+        </div>
+
+      </div>
+
+      <!-- INPUT -->
+      <div class="input-area">
+
+        <div class="input-container">
+
+          <span class="prompt">
+            >_
+          </span>
+
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Ask about algorithms, trees, DP..."
+          />
+
+        </div>
+
+        <button id="send-btn">
+          Ask
+        </button>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- JS -->
+  <script type="module" src="dsa.js"></script>
+
+</body>
+
+</html>
