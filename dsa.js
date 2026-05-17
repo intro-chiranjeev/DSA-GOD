@@ -53,132 +53,37 @@ let totalQuestions = 0;
 const systemInstruction = `
 You are DSA GOD.
 
+You are a focused DSA tutor.
 
-# IDENTITY
-You are a focused DSA (Data Structures & Algorithms) tutor.
-You ONLY answer questions about:
-- Data structures (arrays, linked lists, trees, graphs, heaps, tries, hash maps, stacks, queues)
-- Algorithms (sorting, searching, recursion, DP, greedy, backtracking, divide & conquer)
-- Algorithm complexity analysis (Big O — time and space)
-- Coding patterns (sliding window, two pointers, BFS/DFS, fast & slow pointers, etc.)
-- Problem-solving strategy for DSA problems
-- Related programming syntax ONLY when explaining DSA code
+Answer ONLY:
+- Data Structures
+- Algorithms
+- Complexity Analysis
+- Coding Problems
+- Interview DSA
 
-# RESPONSE RULES
-- Match response length to the question — short questions get short answers
-- Do NOT give full tutorials unless the user asks "explain in detail" or "teach me"
-- Definition asked → one concise sentence + optional example
-- Code asked → brief approach (1–2 lines) + clean optimized code + time/space complexity
-- Explanation asked → simple plain-English explanation, no jargon unless needed
-- Never repeat the question back to the user
-- Never add unnecessary disclaimers or padding
+Default code language:
+Python unless specified.
 
-# CONVERSATION CONTINUITY
-Track conversation context. Treat these as follow-ups to the PREVIOUS topic:
-"explain more", "why?", "how does that work?", "dry run this",
-"optimize it", "simpler approach?", "what's the complexity?",
-"can you use recursion?", "show iterative version"
-
-# CODE FORMAT
-Language: Python (default) — switch if user specifies another language
-Always include:
-1. One-line approach comment
-2. Clean, well-named code
-3. Time complexity — always
-4. Space complexity — only if non-trivial (not O(1))
-
-# REFUSAL RULES
-Refuse ONLY if the question is completely unrelated to DSA or programming.
-Refuse with: "I'm focused on DSA topics only. Ask me about data structures, algorithms, or related coding problems!"
-Do NOT refuse:
-- General programming questions that relate to implementing DSA
-- Questions about which language to use for DSA practice
-- Questions about DSA in interview context
-
-# TONE
-- Beginner-friendly by default
-- No condescension, no over-explaining
-- If user seems advanced (uses terms like amortized, NP-hard), match their level
+Keep answers concise unless asked in detail.
 `;
 
 /* =========================
-   CHAT
+   RETRY SYSTEM
 ========================= */
 
-async function handleChat() {
+function wait(ms) {
 
-  const text =
-    userInput.value.trim();
+  return new Promise((resolve) =>
+    setTimeout(resolve, ms)
+  );
 
-  if (!text) return;
+}
 
-  /* USER MESSAGE */
-  appendMessage("user", text);
-
-  totalQuestions++;
-
-  questionCount.innerText =
-    totalQuestions;
-
-  userInput.value = "";
-
-  sendBtn.disabled = true;
-
-  sendBtn.innerText =
-    "Thinking...";
-
-  /* TYPING */
-  const typing =
-    document.createElement("div");
-
-  typing.className =
-    "message ai-message typing";
-
-  typing.innerHTML = `
-    <span></span>
-    <span></span>
-    <span></span>
-  `;
-
-  chatBox.appendChild(typing);
-
-  scrollBottom();
-
-  try {
-
-    let response;
-
-    /* =========================
-       ADD USER MESSAGE
-    ========================= */
-
-    chatHistory.push({
-      role: "user",
-      parts: [
-        {
-          text: text
-        }
-      ]
-    });
-
-    /* LIMIT HISTORY */
-    if (chatHistory.length > 20) {
-
-      chatHistory.shift();
-
-    }
-
-    /* =========================
-       MAIN MODEL
-    ========================= */
-
-    try {
-
-      /* =========================
-   SAFE MODEL CALL
-========================= */
-
-async function generateWithRetry(modelName, retries = 2) {
+async function generateWithRetry(
+  modelName,
+  retries = 2
+) {
 
   for (let i = 0; i <= retries; i++) {
 
@@ -200,7 +105,7 @@ async function generateWithRetry(modelName, retries = 2) {
 
           topK: 20,
 
-          maxOutputTokens: 400
+          maxOutputTokens: 500
 
         }
 
@@ -209,13 +114,14 @@ async function generateWithRetry(modelName, retries = 2) {
     } catch (err) {
 
       console.log(
-        `${modelName} failed retry ${i + 1}`
+        `${modelName} retry ${i + 1}`
       );
 
-      /* wait before retry */
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1500)
-      );
+      if (i < retries) {
+
+        await wait(1500);
+
+      }
 
     }
 
@@ -226,50 +132,91 @@ async function generateWithRetry(modelName, retries = 2) {
 }
 
 /* =========================
-   PRIMARY + FALLBACK
+   CHAT
 ========================= */
 
-try {
+async function handleChat() {
 
-  response =
-    await generateWithRetry(
-      "gemini-2.5-flash"
-    );
+  const text =
+    userInput.value.trim();
 
-} catch (primaryError) {
+  if (!text) return;
 
-  console.log(
-    "Switching fallback model..."
-  );
+  /* USER MESSAGE */
 
-  response =
-    await generateWithRetry(
-      "gemini-2.0-flash"
-    );
+  appendMessage("user", text);
 
-}
+  totalQuestions++;
 
-          contents: chatHistory,
+  questionCount.innerText =
+    totalQuestions;
 
-          config: {
+  userInput.value = "";
 
-            systemInstruction,
+  sendBtn.disabled = true;
 
-            temperature: 0.2,
+  sendBtn.innerText =
+    "Thinking...";
 
-            topP: 0.8,
+  /* TYPING */
 
-            topK: 20,
+  const typing =
+    document.createElement("div");
 
-            maxOutputTokens: 400
-          }
+  typing.className =
+    "message ai-message typing";
 
-        });
+  typing.innerHTML = `
+    <span></span>
+    <span></span>
+    <span></span>
+  `;
+
+  chatBox.appendChild(typing);
+
+  scrollBottom();
+
+  try {
+
+    let response;
+
+    /* SAVE USER CHAT */
+
+    chatHistory.push({
+
+      role: "user",
+
+      parts: [
+        {
+          text: text
+        }
+      ]
+
+    });
+
+    /* LIMIT HISTORY */
+
+    if (chatHistory.length > 20) {
+
+      chatHistory.shift();
+
+    }
+
+    /* =========================
+       PRIMARY MODEL
+    ========================= */
+
+    try {
+
+      response =
+        await generateWithRetry(
+          "gemini-2.5-flash"
+        );
 
     } catch (primaryError) {
 
       console.log(
-        "Gemini 2.5 overloaded. Switching fallback..."
+        "Primary model overloaded"
       );
 
       /* =========================
@@ -277,33 +224,18 @@ try {
       ========================= */
 
       response =
-        await ai.models.generateContentStream({
-
-          model: "gemini-2.0-flash",
-
-          contents: chatHistory,
-
-          config: {
-
-            systemInstruction,
-
-            temperature: 0.2,
-
-            topP: 0.8,
-
-            topK: 20,
-
-            maxOutputTokens: 400
-          }
-
-        });
+        await generateWithRetry(
+          "gemini-2.0-flash"
+        );
 
     }
 
     /* REMOVE TYPING */
+
     typing.remove();
 
     /* AI MESSAGE */
+
     const aiMessage =
       document.createElement("div");
 
@@ -314,7 +246,8 @@ try {
 
     let fullText = "";
 
-    /* STREAMING */
+    /* STREAM RESPONSE */
+
     for await (const chunk of response) {
 
       const chunkText =
@@ -326,6 +259,7 @@ try {
         marked.parse(fullText);
 
       /* CODE HIGHLIGHT */
+
       if (window.hljs) {
 
         aiMessage
@@ -334,14 +268,13 @@ try {
 
             try {
 
-              hljs.highlightElement(block);
+              hljs.highlightElement(
+                block
+              );
 
             } catch (err) {
 
-              console.log(
-                "Highlight error:",
-                err
-              );
+              console.log(err);
 
             }
 
@@ -353,20 +286,22 @@ try {
 
     }
 
-    /* =========================
-       SAVE AI RESPONSE
-    ========================= */
+    /* SAVE AI RESPONSE */
 
     chatHistory.push({
+
       role: "model",
+
       parts: [
         {
           text: fullText
         }
       ]
+
     });
 
     /* DETECT COMPLEXITY */
+
     updateComplexity(fullText);
 
   } catch (error) {
@@ -378,7 +313,7 @@ try {
     appendMessage(
       "ai",
       `
-⚠️ DSA GOD is currently overloaded.
+⚠️ DSA GOD is currently busy.
 
 Please try again in a few seconds.
       `
@@ -388,7 +323,8 @@ Please try again in a few seconds.
 
     sendBtn.disabled = false;
 
-    sendBtn.innerText = "Ask";
+    sendBtn.innerText =
+      "Ask";
 
     userInput.focus();
 
@@ -400,7 +336,10 @@ Please try again in a few seconds.
    APPEND MESSAGE
 ========================= */
 
-function appendMessage(role, text) {
+function appendMessage(
+  role,
+  text
+) {
 
   const div =
     document.createElement("div");
@@ -414,6 +353,7 @@ function appendMessage(role, text) {
   chatBox.appendChild(div);
 
   /* CODE HIGHLIGHT */
+
   if (window.hljs) {
 
     div
@@ -422,14 +362,13 @@ function appendMessage(role, text) {
 
         try {
 
-          hljs.highlightElement(block);
+          hljs.highlightElement(
+            block
+          );
 
         } catch (err) {
 
-          console.log(
-            "Highlight error:",
-            err
-          );
+          console.log(err);
 
         }
 
@@ -499,9 +438,52 @@ userInput.addEventListener(
   }
 );
 
+/* =========================
+   TOPIC SWITCHING
+========================= */
+
+const navItems =
+  document.querySelectorAll(".nav-item");
+
+const sessionTitle =
+  document.querySelector(".session-title");
+
+navItems.forEach((item) => {
+
+  item.addEventListener(
+    "click",
+    () => {
+
+      navItems.forEach((nav) => {
+
+        nav.classList.remove(
+          "active"
+        );
+
+      });
+
+      item.classList.add(
+        "active"
+      );
+
+      sessionTitle.textContent =
+        item.dataset.topic;
+
+      chatBox.innerHTML = `
+        <div class="message ai-message">
+          You are now in ${item.dataset.topic}.
+        </div>
+      `;
+
+    }
+  );
+
+});
 
 /* =========================
    READY
 ========================= */
 
-console.log("DSA GOD READY");
+console.log(
+  "DSA GOD READY"
+);
