@@ -174,10 +174,80 @@ async function handleChat() {
 
     try {
 
-      response =
-        await ai.models.generateContentStream({
+      /* =========================
+   SAFE MODEL CALL
+========================= */
 
-          model: "gemini-2.5-flash",
+async function generateWithRetry(modelName, retries = 2) {
+
+  for (let i = 0; i <= retries; i++) {
+
+    try {
+
+      return await ai.models.generateContentStream({
+
+        model: modelName,
+
+        contents: chatHistory,
+
+        config: {
+
+          systemInstruction,
+
+          temperature: 0.2,
+
+          topP: 0.8,
+
+          topK: 20,
+
+          maxOutputTokens: 400
+
+        }
+
+      });
+
+    } catch (err) {
+
+      console.log(
+        `${modelName} failed retry ${i + 1}`
+      );
+
+      /* wait before retry */
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1500)
+      );
+
+    }
+
+  }
+
+  throw new Error("Model overloaded");
+
+}
+
+/* =========================
+   PRIMARY + FALLBACK
+========================= */
+
+try {
+
+  response =
+    await generateWithRetry(
+      "gemini-2.5-flash"
+    );
+
+} catch (primaryError) {
+
+  console.log(
+    "Switching fallback model..."
+  );
+
+  response =
+    await generateWithRetry(
+      "gemini-2.0-flash"
+    );
+
+}
 
           contents: chatHistory,
 
