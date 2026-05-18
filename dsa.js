@@ -5,7 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 ========================= */
 
 const API_KEY =
-  "AIzaSyBGJqHBVYY_1zx9RD1L5cGZxuqNGF9Gtr8";
+  "AIzaSyDDpmF74gVwgx8IcSnUSkhwUJojRA6ca94";
 
 /* =========================
    GEMINI
